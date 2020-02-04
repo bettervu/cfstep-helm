@@ -14,6 +14,8 @@ class EntrypointScriptBuilder(object):
     def __init__(self, env):
         self.action = env.get('ACTION', 'install').lower()
         self.kube_context = env.get('KUBE_CONTEXT')
+        # whether or not the kube conntext has already been set
+        self.kube_context_preset = env.get('KUBE_CONTEXT_PRESET')
         self.chart_ref = env.get('CHART_REF', env.get('CHART_NAME'))
         self.chart_repo_url = env.get('CHART_REPO_URL')
         self.chart_version = env.get('CHART_VERSION')
@@ -149,7 +151,7 @@ class EntrypointScriptBuilder(object):
 
     def _build_kubectl_commands(self):
         lines = []
-        if self.action in ['install', 'promotion']:
+        if not self.kube_context_preset and self.action in ['install', 'promotion']:
             if self.kube_context is None:
                 raise Exception('Must set KUBE_CONTEXT in environment (Name of Kubernetes cluster as named in Codefresh)')
             kubectl_cmd = 'kubectl config use-context "%s"' % self.kube_context
